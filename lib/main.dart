@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +31,9 @@ class _TodoListPageState extends State<TodoListPage> {
   final TextEditingController _controller = TextEditingController();
   final List<String> _monthlyTodos = [];
   final List<String> _dailyTodos = [];
+
+  final String today = DateFormat('M월 d일').format(DateTime.now());
+  final String month = DateFormat('M월').format(DateTime.now());
 
   void _addToMonthly() {
     if (_controller.text.trim().isEmpty) return;
@@ -78,9 +82,10 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.tealAccent[300],
       appBar: AppBar(
-        title: const Text('LENA\'s to do list🍋'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('LENA\'s to do list 🌳'),
+        backgroundColor: Colors.teal[300],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -115,8 +120,12 @@ class _TodoListPageState extends State<TodoListPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    _buildTodoBox("📅 이번 달의 할 일", _monthlyTodos, Colors.purple),
-                    _buildTodoBox("📆 오늘의 할 일", _dailyTodos, Colors.blue),
+                    _buildTodoBox("$month 목표🌸", _monthlyTodos, Colors.purple),
+                    _buildTodoBox(
+                      "$today - to do list🌟",
+                      _dailyTodos,
+                      Colors.blue,
+                    ),
                   ],
                 ),
               ),
