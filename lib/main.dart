@@ -27,10 +27,19 @@ class TodoListPage extends StatefulWidget {
   State<TodoListPage> createState() => _TodoListPageState();
 }
 
+class TodoItem {
+  String text;
+  bool isDone;
+
+  TodoItem({required this.text, this.isDone = false});
+
+  TodoItem.empty() : text = '', isDone = false;
+}
+
 class _TodoListPageState extends State<TodoListPage> {
   final TextEditingController _controller = TextEditingController();
-  final List<String> _monthlyTodos = [];
-  final List<String> _dailyTodos = [];
+  final List<TodoItem> _monthlyTodos = [];
+  final List<TodoItem> _dailyTodos = [];
 
   final String today = DateFormat('M월 d일').format(DateTime.now());
   final String month = DateFormat('M월').format(DateTime.now());
@@ -38,20 +47,19 @@ class _TodoListPageState extends State<TodoListPage> {
   void _addToMonthly() {
     if (_controller.text.trim().isEmpty) return;
     setState(() {
-      _monthlyTodos.add(_controller.text.trim());
-      _controller.clear();
+      _monthlyTodos.add(TodoItem(text: _controller.text.trim()));
     });
   }
 
   void _addToDaily() {
     if (_controller.text.trim().isEmpty) return;
     setState(() {
-      _dailyTodos.add(_controller.text.trim());
+      _dailyTodos.add(TodoItem(text: _controller.text.trim()));
       _controller.clear();
     });
   }
 
-  Widget _buildTodoBox(String title, List<String> todos, Color color) {
+  Widget _buildTodoBox(String title, List<TodoItem> todos, Color color) {
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -67,12 +75,19 @@ class _TodoListPageState extends State<TodoListPage> {
             ),
             const SizedBox(height: 8),
             if (todos.isEmpty) const Text("할 일이 없습니다."),
-            ...todos.map(
-              (todo) => ListTile(
-                title: Text(todo),
-                leading: const Icon(Icons.check_box_outline_blank),
-              ),
-            ),
+            ...todos.asMap().entries.map((entry) {
+              final index = entry.key;
+              final todo = entry.value;
+              return CheckboxListTile(
+                title: Text(todo.text),
+                value: todo.isDone,
+                onChanged: (bool? value) {
+                  setState(() {
+                    todo.isDone = value ?? false;
+                  });
+                },
+              );
+            }),
           ],
         ),
       ),
