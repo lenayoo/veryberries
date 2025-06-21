@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'todolist',
+      title: 'Very berries',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
@@ -34,6 +36,11 @@ class TodoItem {
   TodoItem({required this.text, this.isDone = false});
 
   TodoItem.empty() : text = '', isDone = false;
+
+  Map<String, dynamic> toJson() => {'text': text, 'isDone': isDone};
+
+  factory TodoItem.fromJson(Map<String, dynamic> json) =>
+      TodoItem(text: json['text'], isDone: json['isDone']);
 }
 
 class _TodoListPageState extends State<TodoListPage> {
