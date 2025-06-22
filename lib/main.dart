@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert';
+import 'package:very_berries/models/todo_item.dart';
+import 'models/todo_item.dart';
+import 'helpers/storage_helper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,24 +30,24 @@ class TodoListPage extends StatefulWidget {
   State<TodoListPage> createState() => _TodoListPageState();
 }
 
-class TodoItem {
-  String text;
-  bool isDone;
-
-  TodoItem({required this.text, this.isDone = false});
-
-  TodoItem.empty() : text = '', isDone = false;
-
-  Map<String, dynamic> toJson() => {'text': text, 'isDone': isDone};
-
-  factory TodoItem.fromJson(Map<String, dynamic> json) =>
-      TodoItem(text: json['text'], isDone: json['isDone']);
-}
-
 class _TodoListPageState extends State<TodoListPage> {
   final TextEditingController _controller = TextEditingController();
   final List<TodoItem> _monthlyTodos = [];
   final List<TodoItem> _dailyTodos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTodos();
+  }
+
+  void _loadTodos() async {
+    final loaded = await StorageHelper.loadTodos();
+    setState(() {
+      _monthlyTodos.addAll(loaded);
+      _dailyTodos.addAll(loaded);
+    });
+  }
 
   final String today = DateFormat('M월 d일').format(DateTime.now());
   final String month = DateFormat('M월').format(DateTime.now());
