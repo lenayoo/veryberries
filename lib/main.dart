@@ -86,16 +86,33 @@ class _TodoListPageState extends State<TodoListPage> {
             ...todos.asMap().entries.map((entry) {
               final index = entry.key;
               final todo = entry.value;
-              return CheckboxListTile(
-                title: Text(todo.text),
-                value: todo.isDone,
-                onChanged: (bool? value) {
+              return Dismissible(
+                key: Key(todo.text + index.toString()), // 고유 키 필수
+                direction: DismissDirection.startToEnd, // 오른쪽 → 왼쪽 슬라이드
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  color: Colors.redAccent,
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (direction) {
                   setState(() {
-                    todo.isDone = value ?? false;
+                    todos.removeAt(index);
                   });
+                  StorageHelper.saveTodos(todos); // 저장소 반영
                 },
+                child: CheckboxListTile(
+                  title: Text(todo.text),
+                  value: todo.isDone,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      todo.isDone = value ?? false;
+                    });
+                    StorageHelper.saveTodos(todos); // 체크 상태 저장
+                  },
+                ),
               );
-            }),
+            }).toList(),
           ],
         ),
       ),
