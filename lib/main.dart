@@ -102,7 +102,18 @@ class _TodoListPageState extends State<TodoListPage> {
                   StorageHelper.saveTodos(todos); // 저장소 반영
                 },
                 child: CheckboxListTile(
-                  title: Text(todo.text),
+                  title: Text(
+                    todo.text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      decoration:
+                          todo.isDone ? TextDecoration.lineThrough : null,
+                      decorationColor: Colors.grey,
+                      decorationThickness: 2.0,
+                      color: todo.isDone ? Colors.grey : Colors.black,
+                    ),
+                  ),
                   value: todo.isDone,
                   onChanged: (bool? value) {
                     setState(() {
