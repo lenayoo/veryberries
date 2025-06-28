@@ -35,6 +35,12 @@ class _TodoListPageState extends State<TodoListPage> {
   final List<TodoItem> _monthlyTodos = [];
   final List<TodoItem> _dailyTodos = [];
 
+  String get _todayKey {
+    final now = DateTime.now();
+    final formatter = DateFormat('yyyy-MM-dd');
+    return 'dailyTodos_${formatter.format(now)}';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -42,11 +48,17 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 
   void _loadTodos() async {
-    final loaded = await StorageHelper.loadTodos();
+    final monthLoaded = await StorageHelper.loadTodos();
+    final dailyLoaded = await StorageHelper.loadDailyTodos(_todayKey);
+
     setState(() {
-      _monthlyTodos.addAll(loaded);
-      _dailyTodos.addAll(loaded);
+      _monthlyTodos.addAll(monthLoaded);
+      _dailyTodos.addAll(dailyLoaded);
     });
+  }
+
+  void _saveDailyTodos() {
+    StorageHelper.saveDailyTodos(_dailyTodos, _todayKey);
   }
 
   final String today = DateFormat('M월 d일').format(DateTime.now());
@@ -65,6 +77,7 @@ class _TodoListPageState extends State<TodoListPage> {
       _dailyTodos.add(TodoItem(text: _controller.text.trim()));
       _controller.clear();
     });
+    _saveDailyTodos();
   }
 
   Widget _buildTodoBox(String title, List<TodoItem> todos, Color color) {
