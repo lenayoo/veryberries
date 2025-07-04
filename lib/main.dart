@@ -68,6 +68,7 @@ class _TodoListPageState extends State<TodoListPage> {
     if (_controller.text.trim().isEmpty) return;
     setState(() {
       _monthlyTodos.add(TodoItem(text: _controller.text.trim()));
+      _controller.clear();
     });
   }
 
@@ -148,7 +149,7 @@ class _TodoListPageState extends State<TodoListPage> {
     return Scaffold(
       backgroundColor: Colors.tealAccent[300],
       appBar: AppBar(
-        title: const Text('LENA\'s to do list 🌳'),
+        title: const Text('Monthly / Daily TodoList🌳'),
         backgroundColor: Colors.teal[300],
       ),
       body: Padding(
