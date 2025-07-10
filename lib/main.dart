@@ -152,51 +152,67 @@ class _TodoListPageState extends State<TodoListPage> {
         title: const Text('Monthly / Daily TodoList🌳'),
         backgroundColor: Colors.teal[300],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // 입력창과 버튼
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(labelText: '할 일을 입력하세요'),
+      body: Stack(
+        children: [
+          // ✅ 배경 이미지 추가
+          Positioned.fill(
+            child: Image.asset('assets/images/main-bg.png', fit: BoxFit.cover),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // 입력창과 버튼
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          decoration: const InputDecoration(
+                            labelText: '할 일을 입력하세요',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        children: [
+                          ElevatedButton(
+                            onPressed: _addToMonthly,
+                            child: const Text("이번 달에 추가"),
+                          ),
+                          ElevatedButton(
+                            onPressed: _addToDaily,
+                            child: const Text("오늘에 추가"),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _addToMonthly,
-                      child: const Text("이번 달에 추가"),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildTodoBox(
+                            "$month 목표🌸",
+                            _monthlyTodos,
+                            Colors.purple,
+                          ),
+                          _buildTodoBox(
+                            "$today - to do list🌟",
+                            _dailyTodos,
+                            Colors.blue,
+                          ),
+                        ],
+                      ),
                     ),
-                    ElevatedButton(
-                      onPressed: _addToDaily,
-                      child: const Text("오늘에 추가"),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildTodoBox("$month 목표🌸", _monthlyTodos, Colors.purple),
-                    _buildTodoBox(
-                      "$today - to do list🌟",
-                      _dailyTodos,
-                      Colors.blue,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
