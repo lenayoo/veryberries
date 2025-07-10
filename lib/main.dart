@@ -147,10 +147,9 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.tealAccent[300],
       appBar: AppBar(
         title: const Text('Monthly / Daily TodoList🌳'),
-        backgroundColor: Colors.teal[300],
+        // backgroundColor: Colors.trreal[300],
       ),
       body: Stack(
         children: [
