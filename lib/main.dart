@@ -70,6 +70,7 @@ class _TodoListPageState extends State<TodoListPage> {
       _monthlyTodos.add(TodoItem(text: _controller.text.trim()));
       _controller.clear();
     });
+    StorageHelper.saveTodos(_monthlyTodos);
   }
 
   void _addToDaily() {
@@ -102,7 +103,7 @@ class _TodoListPageState extends State<TodoListPage> {
               final todo = entry.value;
               return Dismissible(
                 key: Key(todo.text + index.toString()), // 고유 키 필수
-                direction: DismissDirection.startToEnd, // 오른쪽 → 왼쪽 슬라이드
+                direction: DismissDirection.endToStart, // 왼쪽 → 오른쪽 슬라이드
                 background: Container(
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -147,10 +148,7 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Monthly / Daily TodoList🌳'),
-        // backgroundColor: Colors.trreal[300],
-      ),
+      appBar: AppBar(title: const Text('Very Berries🫐🍓')),
       body: Stack(
         children: [
           // ✅ 배경 이미지 추가
