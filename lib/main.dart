@@ -69,6 +69,7 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       _monthlyTodos.add(TodoItem(text: _controller.text.trim()));
       _controller.clear();
+      FocusScope.of(context).unfocus();
     });
     StorageHelper.saveTodos(_monthlyTodos);
   }
@@ -78,6 +79,7 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       _dailyTodos.add(TodoItem(text: _controller.text.trim()));
       _controller.clear();
+      FocusScope.of(context).unfocus();
     });
     _saveDailyTodos();
   }
