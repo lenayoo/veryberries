@@ -5,3 +5,15 @@
 # Xcode-related
 **/dgph
 **/xcuserdata/
+
+
+# Xcode build artifacts
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/build/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/xcshareddata/xcschemes/*.xcscheme
+
+# CocoaPods
+ios/Pods/
+ios/Podfile.lock
