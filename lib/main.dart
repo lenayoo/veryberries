@@ -150,12 +150,12 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Very Berries🫐🍓')),
+      appBar: AppBar(title: const Text('Everyday berries🍓')),
       body: Stack(
         children: [
           // ✅ 배경 이미지 추가
           Positioned.fill(
-            child: Image.asset('assets/images/main-bg.png', fit: BoxFit.cover),
+            child: Image.asset('assets/images/sub-bg.png', fit: BoxFit.cover),
           ),
           SafeArea(
             child: Padding(
