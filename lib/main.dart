@@ -61,8 +61,8 @@ class _TodoListPageState extends State<TodoListPage> {
     StorageHelper.saveDailyTodos(_dailyTodos, _todayKey);
   }
 
-  final String today = DateFormat('M월 d일').format(DateTime.now());
-  final String month = DateFormat('M월').format(DateTime.now());
+  final String today = DateFormat('M月 d日').format(DateTime.now());
+  final String month = DateFormat('M月').format(DateTime.now());
 
   void _addToMonthly() {
     if (_controller.text.trim().isEmpty) return;
@@ -99,7 +99,7 @@ class _TodoListPageState extends State<TodoListPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            if (todos.isEmpty) const Text("할 일이 없습니다."),
+            if (todos.isEmpty) const Text("予定がないです。"),
             ...todos.asMap().entries.map((entry) {
               final index = entry.key;
               final todo = entry.value;
@@ -150,7 +150,7 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Everyday berries🍓')),
+      appBar: AppBar(title: const Text('One Berry at a Day♥️')),
       body: Stack(
         children: [
           // ✅ 배경 이미지 추가
@@ -169,7 +169,7 @@ class _TodoListPageState extends State<TodoListPage> {
                         child: TextField(
                           controller: _controller,
                           decoration: const InputDecoration(
-                            labelText: '할 일을 입력하세요',
+                            labelText: 'やることを入力してください。',
                           ),
                         ),
                       ),
@@ -178,11 +178,11 @@ class _TodoListPageState extends State<TodoListPage> {
                         children: [
                           ElevatedButton(
                             onPressed: _addToMonthly,
-                            child: const Text("이번 달에 추가"),
+                            child: const Text("今月に追加"),
                           ),
                           ElevatedButton(
                             onPressed: _addToDaily,
-                            child: const Text("오늘에 추가"),
+                            child: const Text("今日に追加"),
                           ),
                         ],
                       ),
@@ -194,12 +194,12 @@ class _TodoListPageState extends State<TodoListPage> {
                       child: Column(
                         children: [
                           _buildTodoBox(
-                            "$month 목표🌸",
+                            "$month - 今月の目標🫐",
                             _monthlyTodos,
                             Colors.purple,
                           ),
                           _buildTodoBox(
-                            "$today - to do list🌟",
+                            "$today - 今日の目標🍓",
                             _dailyTodos,
                             Colors.blue,
                           ),
