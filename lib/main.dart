@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:very_berries/models/todo_item.dart';
 import 'models/todo_item.dart';
 import 'helpers/storage_helper.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,12 +19,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en'), Locale('ko'), Locale('ja')],
       home: const TodoListPage(),
     );
   }
