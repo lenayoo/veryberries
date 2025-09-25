@@ -1,0 +1,23 @@
+{
+  "month" : "{month}月",
+  "@month": {
+    "description": "月名 (例: 9月)",
+      "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "monthDate" : "{month}月 {date}日",
+  "@monthDate": {
+    "description": "Formatted month and date name",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}

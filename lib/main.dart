@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:very_berries/models/todo_item.dart';
 import 'models/todo_item.dart';
 import 'helpers/storage_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,12 +16,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Very berries',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en'), Locale('ko'), Locale('ja')],
       home: const TodoListPage(),
     );
   }
@@ -60,6 +71,19 @@ class _TodoListPageState extends State<TodoListPage> {
 
   void _saveDailyTodos() {
     StorageHelper.saveDailyTodos(_dailyTodos, _todayKey);
+  }
+
+  String formatToday(BuildContext context) {
+    final now = DateTime.now();
+    final month = DateFormat.MMMM(
+      Localizations.localeOf(context).toString(),
+    ).format(now);
+
+    final date = DateFormat.d(
+      Localizations.localeOf(context).toString(),
+    ).format(now);
+
+    return AppLocalizations.of(context)?.monthDate(month, date) ?? "";
   }
 
   final String today = DateFormat('M月 d日').format(DateTime.now());

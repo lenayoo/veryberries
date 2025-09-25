@@ -1,0 +1,24 @@
+{
+  "month" : "{month}",
+  "@month": {
+    "description": "Formatted month name",
+      "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "monthDate" : "{month} / {date}",
+  "@monthDate": {
+    "description": "Formatted month and date name",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}
+
