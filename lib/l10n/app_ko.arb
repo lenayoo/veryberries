@@ -19,5 +19,29 @@
         "type": "String"
       }
     }
+  },
+  "noPlan" : "일정이 없습니다.",
+  "@noPlan" : {
+    "description": "When there is no to-do list"
+  },
+   "enterTodo" : "할 일을 입력해주세요!",
+   "@enterTodo" : {
+    "description": "Please input to-do"
+  },
+  "addToday" : "오늘에 추가",
+   "@addToday" : {
+    "description": "add Today to-do list"
+  },
+  "addMonth" : "이번 달에 추가",
+   "@addMonth" : {
+    "description": "add this month to-do list"
+  },
+  "dailyGoals" : "오늘의 목표🍓",
+   "@dailyGoals" : {
+    "description": "daily to-do list"
+  },
+  "monthlyGoals" : "이번 달의 목표🫐",
+   "@monthlyGoals" : {
+    "description": "monthly to-do list"
   }
 }

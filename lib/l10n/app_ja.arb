@@ -19,5 +19,29 @@
         "type": "String"
       }
     }
+  },
+   "noPlan" : "予定がないです。",
+   "@noPlan" : {
+    "description": "When there is no to-do list"
+  },
+   "enterTodo" : "やることを入力してください!",
+   "@enterTodo" : {
+    "description": "Please input to-do"
+  },
+  "addToday" : "今日に追加",
+   "@addToday" : {
+    "description": "add Today to-do list"
+  },
+  "addMonth" : "今月に追加",
+   "@addMonth" : {
+    "description": "add this month to-do list"
+  },
+  "dailyGoals" : "今日の目標🍓",
+   "@dailyGoals" : {
+    "description": "daily to-do list"
+  },
+  "monthlyGoals" : "今月の目標🫐",
+   "@monthlyGoals" : {
+    "description": "monthly to-do list"
   }
 }

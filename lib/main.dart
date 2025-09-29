@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:very_berries/models/todo_item.dart';
-import 'models/todo_item.dart';
 import 'helpers/storage_helper.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -16,7 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Very berries',
@@ -86,8 +84,35 @@ class _TodoListPageState extends State<TodoListPage> {
     return AppLocalizations.of(context)?.monthDate(month, date) ?? "";
   }
 
-  final String today = DateFormat('M月 d日').format(DateTime.now());
-  final String month = DateFormat('M月').format(DateTime.now());
+  /// 오늘 날짜를 로컬라이즈된 형식으로 리턴
+  String get todayText {
+    final now = DateTime.now();
+    final locale = Localizations.localeOf(context).toString();
+
+    final month =
+        locale.startsWith('en')
+            ? DateFormat.MMMM(locale).format(now) // September
+            : DateFormat.M(locale).format(now);
+    final date = DateFormat.d(
+      Localizations.localeOf(context).toString(),
+    ).format(now);
+
+    // arb에 정의된 monthDate 사용 → "{month}월 {date}일"
+    return AppLocalizations.of(context)!.monthDate(month, date);
+  }
+
+  /// 이번 달 이름만 로컬라이즈된 형식으로 리턴
+  String get monthText {
+    final now = DateTime.now();
+    final locale = Localizations.localeOf(context).toString();
+
+    final month =
+        locale.startsWith('en')
+            ? DateFormat.MMMM(locale).format(now) // September
+            : DateFormat.M(locale).format(now);
+    // arb에 정의된 month 사용 → "{month}월"
+    return AppLocalizations.of(context)!.month(month);
+  }
 
   void _addToMonthly() {
     if (_controller.text.trim().isEmpty) return;
@@ -124,7 +149,7 @@ class _TodoListPageState extends State<TodoListPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            if (todos.isEmpty) const Text("予定がないです。"),
+            if (todos.isEmpty) Text(AppLocalizations.of(context)!.noPlan),
             ...todos.asMap().entries.map((entry) {
               final index = entry.key;
               final todo = entry.value;
@@ -175,7 +200,7 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('One Berry at a Day♥️')),
+      appBar: AppBar(title: const Text('One Berry at a Day🍓')),
       body: Stack(
         children: [
           // ✅ 배경 이미지 추가
@@ -193,8 +218,8 @@ class _TodoListPageState extends State<TodoListPage> {
                       Expanded(
                         child: TextField(
                           controller: _controller,
-                          decoration: const InputDecoration(
-                            labelText: 'やることを入力してください。',
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.enterTodo,
                           ),
                         ),
                       ),
@@ -203,11 +228,11 @@ class _TodoListPageState extends State<TodoListPage> {
                         children: [
                           ElevatedButton(
                             onPressed: _addToMonthly,
-                            child: const Text("今月に追加"),
+                            child: Text(AppLocalizations.of(context)!.addToday),
                           ),
                           ElevatedButton(
                             onPressed: _addToDaily,
-                            child: const Text("今日に追加"),
+                            child: Text(AppLocalizations.of(context)!.addMonth),
                           ),
                         ],
                       ),
@@ -219,12 +244,12 @@ class _TodoListPageState extends State<TodoListPage> {
                       child: Column(
                         children: [
                           _buildTodoBox(
-                            "$month - 今月の目標🫐",
+                            "$monthText - ${AppLocalizations.of(context)!.monthlyGoals}",
                             _monthlyTodos,
                             Colors.purple,
                           ),
                           _buildTodoBox(
-                            "$today - 今日の目標🍓",
+                            "$todayText - ${AppLocalizations.of(context)!.dailyGoals}",
                             _dailyTodos,
                             Colors.blue,
                           ),

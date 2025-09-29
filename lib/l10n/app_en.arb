@@ -8,7 +8,7 @@
       }
     }
   },
-  "monthDate" : "{month} / {date}",
+  "monthDate" : "{month} {date}",
   "@monthDate": {
     "description": "Formatted month and date name",
     "placeholders": {
@@ -19,6 +19,29 @@
         "type": "String"
       }
     }
+  },
+  "noPlan" : "There is no plan ahead",
+  "@noPlan" : {
+    "description": "When there is no to-do list"
+  },
+   "enterTodo" : "Please enter your to-do!",
+   "@enterTodo" : {
+    "description": "Please input to-do"
+  },
+  "addToday" : "add today",
+   "@addToday" : {
+    "description": "add Today to-do list"
+  },
+  "addMonth" : "add this month",
+   "@addMonth" : {
+    "description": "add this month to-do list"
+  },
+  "dailyGoals" : "Daily Goals🍓",
+   "@dailyGoals" : {
+    "description": "daily to-do list"
+  },
+  "monthlyGoals" : "Monthly Goals🫐",
+   "@monthlyGoals" : {
+    "description": "monthly to-do list"
   }
 }
-
