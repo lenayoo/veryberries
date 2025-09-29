@@ -9,8 +9,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -209,7 +209,10 @@ class _TodoListPageState extends State<TodoListPage> {
         children: [
           // ✅ 배경 이미지 추가
           Positioned.fill(
-            child: Image.asset('assets/images/sub-bg.png', fit: BoxFit.cover),
+            child: Image.asset(
+              'assets/images/bg-autumn-1.png',
+              fit: BoxFit.cover,
+            ),
           ),
           SafeArea(
             child: Padding(

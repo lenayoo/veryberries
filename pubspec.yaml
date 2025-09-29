@@ -76,6 +76,8 @@ flutter:
   assets:
     - assets/images/main-bg.png
     - assets/images/sub-bg.png
+    - assets/images/bg-autumn-1.png
+    - assets/images/bg-autumn-2.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
