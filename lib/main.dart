@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Very berries',
       theme: ThemeData(
+        fontFamily: 'main-font',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       localizationsDelegates: const [
@@ -227,6 +228,7 @@ class _TodoListPageState extends State<TodoListPage> {
                           controller: _controller,
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.enterTodo,
+                            labelStyle: const TextStyle(fontSize: 17),
                           ),
                         ),
                       ),
