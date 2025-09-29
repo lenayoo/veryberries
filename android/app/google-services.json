@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195865332091",
+    "project_id": "very-berries",
+    "storage_bucket": "very-berries.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195865332091:android:69394d1bd12f9fad54d5de",
+        "android_client_info": {
+          "package_name": "com.example.veryberries"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTGIERBEtGJfr7Z_WT-SA2YG0wx2OOiQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
