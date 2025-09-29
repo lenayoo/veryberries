@@ -204,7 +204,7 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('One Berry at a Day🍓')),
+      // appBar: AppBar(title: const Text('One Berry at a Day🍓')),
       body: Stack(
         children: [
           // ✅ 배경 이미지 추가
@@ -235,11 +235,11 @@ class _TodoListPageState extends State<TodoListPage> {
                         children: [
                           ElevatedButton(
                             onPressed: _addToMonthly,
-                            child: Text(AppLocalizations.of(context)!.addToday),
+                            child: Text(AppLocalizations.of(context)!.addMonth),
                           ),
                           ElevatedButton(
                             onPressed: _addToDaily,
-                            child: Text(AppLocalizations.of(context)!.addMonth),
+                            child: Text(AppLocalizations.of(context)!.addToday),
                           ),
                         ],
                       ),
