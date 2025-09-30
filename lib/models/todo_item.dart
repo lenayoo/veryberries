@@ -1,13 +1,37 @@
 class TodoItem {
+  String id;
   String text;
   bool isDone;
+  String date;
 
-  TodoItem({required this.text, this.isDone = false});
+  TodoItem({
+    required this.id,
+    required this.text,
+    this.isDone = false,
+    required this.date,
+  });
 
-  TodoItem.empty() : text = '', isDone = false;
+  // Firestore에 저장할 때 → Map 변환
+  Map<String, dynamic> toMap() {
+    return {'text': text, 'isDone': isDone, 'date': date};
+  }
 
-  Map<String, dynamic> toJson() => {'text': text, 'isDone': isDone};
+  // Firestore에서 읽어올 때 → TodoItem 변환
+  factory TodoItem.fromMap(Map<String, dynamic> map, String documentId) {
+    return TodoItem(
+      id: documentId,
+      text: map['text'] ?? '',
+      isDone: map['isDone'] ?? false,
+      date: map['date'] ?? '',
+    );
+  }
 
-  factory TodoItem.fromJson(Map<String, dynamic> json) =>
-      TodoItem(text: json['text'], isDone: json['isDone']);
+  TodoItem copyWith({String? id, String? text, bool? isDone, String? date}) {
+    return TodoItem(
+      id: id ?? this.id,
+      text: text ?? this.text,
+      isDone: isDone ?? this.isDone,
+      date: date ?? this.date,
+    );
+  }
 }

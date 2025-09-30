@@ -1,5 +1,5 @@
 {
-  "month" : "{month}월",
+  "month" : "{month}",
   "@month": {
     "description": "월 이름 (예: 9월)",
      "placeholders": {
@@ -8,7 +8,7 @@
       }
     }
   },
-  "monthDate" : "{month}월 {date}일",
+  "monthDate" : "{month} {date}",
   "@monthDate": {
     "description": "Formatted month and date name",
     "placeholders": {

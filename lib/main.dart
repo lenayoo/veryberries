@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:very_berries/helpers/firebase_service.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -6,11 +8,11 @@ import 'package:very_berries/models/todo_item.dart';
 import 'helpers/storage_helper.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print("Firebase 연결된 앱 개수:🍋 ${Firebase.apps.length}");
   runApp(const MyApp());
 }
 
@@ -59,21 +61,37 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   void initState() {
     super.initState();
+    final db = FirebaseFirestore.instance;
+    db
+        .collection("test")
+        .add({"text": "앱 시작할 때 저장됨", "date": DateTime.now()})
+        .then((docRef) {
+          print("🔥 저장 성공: ${docRef.id}");
+        })
+        .catchError((e) {
+          print("❌ 저장 실패: $e");
+        });
     _loadTodos();
   }
 
+  final FirebaseService _firebaseService = FirebaseService();
+
   void _loadTodos() async {
-    final monthLoaded = await StorageHelper.loadTodos();
-    final dailyLoaded = await StorageHelper.loadDailyTodos(_todayKey);
+    final monthLoaded = await _firebaseService.getMonthlyTodos();
+
+    final now = DateTime.now();
+    final dateKey =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final dailyLoaded = await _firebaseService.getDailyTodos(dateKey);
 
     setState(() {
+      _monthlyTodos.clear();
       _monthlyTodos.addAll(monthLoaded);
+
+      _dailyTodos.clear();
       _dailyTodos.addAll(dailyLoaded);
     });
-  }
-
-  void _saveDailyTodos() {
-    StorageHelper.saveDailyTodos(_dailyTodos, _todayKey);
   }
 
   String formatToday(BuildContext context) {
@@ -119,27 +137,52 @@ class _TodoListPageState extends State<TodoListPage> {
     return AppLocalizations.of(context)!.month(month);
   }
 
-  void _addToMonthly() {
+  void _addToMonthly() async {
     if (_controller.text.trim().isEmpty) return;
+
+    final newTodo = TodoItem(
+      id: "",
+      text: _controller.text.trim(),
+      isDone: false,
+      date: monthText,
+    );
+
+    final docRef = await _firebaseService.addMonthlyTodo(newTodo);
+
     setState(() {
-      _monthlyTodos.add(TodoItem(text: _controller.text.trim()));
+      _monthlyTodos.add(newTodo.copyWith(id: docRef.id));
       _controller.clear();
       FocusScope.of(context).unfocus();
     });
-    StorageHelper.saveTodos(_monthlyTodos);
+    // StorageHelper.saveTodos(_monthlyTodos);
   }
 
-  void _addToDaily() {
+  void _addToDaily() async {
     if (_controller.text.trim().isEmpty) return;
+
+    final newTodo = TodoItem(
+      id: "",
+      text: _controller.text.trim(),
+      isDone: false,
+      date: todayText,
+    );
+
+    final docRef = await _firebaseService.addDailyTodo(newTodo, todayText);
+
     setState(() {
-      _dailyTodos.add(TodoItem(text: _controller.text.trim()));
+      _dailyTodos.add(newTodo.copyWith(id: docRef.id));
       _controller.clear();
       FocusScope.of(context).unfocus();
     });
-    _saveDailyTodos();
+    // StorageHelper.saveDailyTodos(_dailyTodos, _todayKey);
   }
 
-  Widget _buildTodoBox(String title, List<TodoItem> todos, Color color) {
+  Widget _buildTodoBox(
+    String title,
+    List<TodoItem> todos,
+    Color color, {
+    required bool isMonthly,
+  }) {
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -158,20 +201,25 @@ class _TodoListPageState extends State<TodoListPage> {
             ...todos.asMap().entries.map((entry) {
               final index = entry.key;
               final todo = entry.value;
+
               return Dismissible(
-                key: Key(todo.text + index.toString()), // 고유 키 필수
-                direction: DismissDirection.endToStart, // 왼쪽 → 오른쪽 슬라이드
+                key: Key(todo.id), // Firestore 문서 ID 사용
+                direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   color: Colors.redAccent,
                   child: const Icon(Icons.delete, color: Colors.white),
                 ),
-                onDismissed: (direction) {
+                onDismissed: (direction) async {
                   setState(() {
                     todos.removeAt(index);
                   });
-                  StorageHelper.saveTodos(todos); // 저장소 반영
+
+                  // ✅ Firestore 삭제
+                  await _firebaseService.deleteTodo(
+                    'users/testUser/${isMonthly ? "monthly" : "daily"}/${todo.id}',
+                  );
                 },
                 child: CheckboxListTile(
                   title: Text(
@@ -187,11 +235,23 @@ class _TodoListPageState extends State<TodoListPage> {
                     ),
                   ),
                   value: todo.isDone,
-                  onChanged: (bool? value) {
+                  onChanged: (bool? value) async {
                     setState(() {
                       todo.isDone = value ?? false;
                     });
-                    StorageHelper.saveTodos(todos); // 체크 상태 저장
+
+                    // ✅ Firestore 업데이트
+                    if (isMonthly) {
+                      await _firebaseService.updateMonthlyTodoIsDone(
+                        todo.id,
+                        todo.isDone,
+                      );
+                    } else {
+                      await _firebaseService.updateDailyTodoIsDone(
+                        todo.id,
+                        todo.isDone,
+                      );
+                    }
                   },
                 ),
               );
@@ -228,7 +288,7 @@ class _TodoListPageState extends State<TodoListPage> {
                           controller: _controller,
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.enterTodo,
-                            labelStyle: const TextStyle(fontSize: 17),
+                            labelStyle: const TextStyle(fontSize: 13),
                           ),
                         ),
                       ),
@@ -255,12 +315,14 @@ class _TodoListPageState extends State<TodoListPage> {
                           _buildTodoBox(
                             "$monthText - ${AppLocalizations.of(context)!.monthlyGoals}",
                             _monthlyTodos,
+                            isMonthly: true,
                             Colors.purple,
                           ),
                           _buildTodoBox(
                             "$todayText - ${AppLocalizations.of(context)!.dailyGoals}",
                             _dailyTodos,
-                            Colors.blue,
+                            isMonthly: false,
+                            Color(0xFFF7E8C8),
                           ),
                         ],
                       ),
