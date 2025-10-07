@@ -77,20 +77,34 @@ class _TodoListPageState extends State<TodoListPage> {
   final FirebaseService _firebaseService = FirebaseService();
 
   void _loadTodos() async {
-    final monthLoaded = await _firebaseService.getMonthlyTodos();
-
     final now = DateTime.now();
     final dateKey =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
+    final monthLoaded = await _firebaseService.getMonthlyTodos();
     final dailyLoaded = await _firebaseService.getDailyTodos(dateKey);
 
-    setState(() {
-      _monthlyTodos.clear();
-      _monthlyTodos.addAll(monthLoaded);
+    final currentMonth = monthText;
+    final currentDay = todayText;
 
-      _dailyTodos.clear();
-      _dailyTodos.addAll(dailyLoaded);
+    final validMonthly =
+        monthLoaded.where((todo) => todo.date == currentMonth).toList();
+    final validDaily =
+        dailyLoaded.where((todo) => todo.date == currentDay).toList();
+
+    setState(() {
+      // _monthlyTodos.clear();
+      // _monthlyTodos.addAll(monthLoaded);
+      _monthlyTodos
+        ..clear()
+        ..addAll(validMonthly);
+
+      // _dailyTodos.clear();
+      // _dailyTodos.addAll(dailyLoaded);
+
+      _dailyTodos
+        ..clear()
+        ..addAll(validDaily);
     });
   }
 
