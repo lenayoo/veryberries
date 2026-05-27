@@ -1,4 +1,8 @@
 {
+  "appTitle" : "Very berries",
+  "@appTitle" : {
+    "description": "Application title"
+  },
   "month" : "{month}",
   "@month": {
     "description": "Formatted month name",

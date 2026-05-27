@@ -1,4 +1,8 @@
 {
+  "appTitle" : "Very berries",
+  "@appTitle" : {
+    "description": "アプリ名"
+  },
   "month" : "{month}",
   "@month": {
     "description": "月名 (例: 9月)",

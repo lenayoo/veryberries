@@ -1,29 +1,30 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:very_berries/helpers/firebase_service.dart';
-import 'firebase_options.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:very_berries/models/todo_item.dart';
-import 'helpers/storage_helper.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
-void main() async {
+import 'helpers/storage_helper.dart';
+import 'models/todo_item.dart';
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("Firebase 연결된 앱 개수:🍋 ${Firebase.apps.length}");
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.repository, this.locale});
+
+  final GoalRepository? repository;
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Very berries',
+      locale: locale,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: ThemeData(
         fontFamily: 'main-font',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -35,160 +36,175 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en'), Locale('ko'), Locale('ja')],
-      home: const TodoListPage(),
+      localeResolutionCallback: (locale, supportedLocales) {
+        if (locale == null) {
+          return const Locale('en');
+        }
+
+        for (final supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale.languageCode) {
+            return supportedLocale;
+          }
+        }
+
+        return const Locale('en');
+      },
+      home: TodoListPage(
+        repository: repository ?? const SecureStorageGoalRepository(),
+      ),
     );
   }
 }
 
 class TodoListPage extends StatefulWidget {
-  const TodoListPage({super.key});
+  const TodoListPage({super.key, required this.repository});
+
+  final GoalRepository repository;
 
   @override
   State<TodoListPage> createState() => _TodoListPageState();
 }
 
-class _TodoListPageState extends State<TodoListPage> {
+class _TodoListPageState extends State<TodoListPage>
+    with WidgetsBindingObserver {
   final TextEditingController _controller = TextEditingController();
   final List<TodoItem> _monthlyTodos = [];
   final List<TodoItem> _dailyTodos = [];
 
-  String get _todayKey {
-    final now = DateTime.now();
-    final formatter = DateFormat('yyyy-MM-dd');
-    return 'dailyTodos_${formatter.format(now)}';
-  }
+  late String _visibleTodayKey;
+  late String _visibleMonthKey;
+  Timer? _periodTimer;
+
+  String get _todayKey => StorageHelper.todayKey();
+
+  String get _monthKey => StorageHelper.currentMonthKey();
 
   @override
   void initState() {
     super.initState();
-    final db = FirebaseFirestore.instance;
-    db
-        .collection("test")
-        .add({"text": "앱 시작할 때 저장됨", "date": DateTime.now()})
-        .then((docRef) {
-          print("🔥 저장 성공: ${docRef.id}");
-        })
-        .catchError((e) {
-          print("❌ 저장 실패: $e");
-        });
+    WidgetsBinding.instance.addObserver(this);
+    _visibleTodayKey = _todayKey;
+    _visibleMonthKey = _monthKey;
     _loadTodos();
+    _periodTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _refreshVisibleGoalsIfPeriodChanged(),
+    );
   }
 
-  final FirebaseService _firebaseService = FirebaseService();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshVisibleGoalsIfPeriodChanged(force: true);
+    }
+  }
 
-  void _loadTodos() async {
-    final now = DateTime.now();
-    final dateKey =
-        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _periodTimer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
-    final monthLoaded = await _firebaseService.getMonthlyTodos();
-    final dailyLoaded = await _firebaseService.getDailyTodos(dateKey);
+  Future<void> _loadTodos() async {
+    final snapshot = await widget.repository.loadVisibleGoals();
 
-    final currentMonth = monthText;
-    final currentDay = todayText;
-
-    final validMonthly =
-        monthLoaded.where((todo) => todo.date == currentMonth).toList();
-    final validDaily =
-        dailyLoaded.where((todo) => todo.date == currentDay).toList();
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
-      // _monthlyTodos.clear();
-      // _monthlyTodos.addAll(monthLoaded);
+      _visibleTodayKey = _todayKey;
+      _visibleMonthKey = _monthKey;
       _monthlyTodos
         ..clear()
-        ..addAll(validMonthly);
-
-      // _dailyTodos.clear();
-      // _dailyTodos.addAll(dailyLoaded);
-
+        ..addAll(snapshot.monthlyGoals);
       _dailyTodos
         ..clear()
-        ..addAll(validDaily);
+        ..addAll(snapshot.dailyGoals);
     });
   }
 
-  String formatToday(BuildContext context) {
-    final now = DateTime.now();
-    final month = DateFormat.MMMM(
-      Localizations.localeOf(context).toString(),
-    ).format(now);
+  Future<void> _refreshVisibleGoalsIfPeriodChanged({bool force = false}) async {
+    final todayKey = _todayKey;
+    final monthKey = _monthKey;
 
-    final date = DateFormat.d(
-      Localizations.localeOf(context).toString(),
-    ).format(now);
+    if (!force &&
+        todayKey == _visibleTodayKey &&
+        monthKey == _visibleMonthKey) {
+      return;
+    }
 
-    return AppLocalizations.of(context)?.monthDate(month, date) ?? "";
+    await _loadTodos();
   }
 
-  /// 오늘 날짜를 로컬라이즈된 형식으로 리턴
   String get todayText {
     final now = DateTime.now();
     final locale = Localizations.localeOf(context).toString();
 
     final month =
         locale.startsWith('en')
-            ? DateFormat.MMMM(locale).format(now) // September
+            ? DateFormat.MMMM(locale).format(now)
             : DateFormat.M(locale).format(now);
-    final date = DateFormat.d(
-      Localizations.localeOf(context).toString(),
-    ).format(now);
+    final date = DateFormat.d(locale).format(now);
 
-    // arb에 정의된 monthDate 사용 → "{month}월 {date}일"
     return AppLocalizations.of(context)!.monthDate(month, date);
   }
 
-  /// 이번 달 이름만 로컬라이즈된 형식으로 리턴
   String get monthText {
     final now = DateTime.now();
     final locale = Localizations.localeOf(context).toString();
 
     final month =
         locale.startsWith('en')
-            ? DateFormat.MMMM(locale).format(now) // September
+            ? DateFormat.MMMM(locale).format(now)
             : DateFormat.M(locale).format(now);
-    // arb에 정의된 month 사용 → "{month}월"
     return AppLocalizations.of(context)!.month(month);
   }
 
-  void _addToMonthly() async {
-    if (_controller.text.trim().isEmpty) return;
+  Future<void> _addToMonthly() async {
+    if (_controller.text.trim().isEmpty) {
+      return;
+    }
 
-    final newTodo = TodoItem(
-      id: "",
+    await _refreshVisibleGoalsIfPeriodChanged();
+    final newTodo = await widget.repository.addGoal(
+      bucket: GoalBucket.monthly,
       text: _controller.text.trim(),
-      isDone: false,
-      date: monthText,
     );
 
-    final docRef = await _firebaseService.addMonthlyTodo(newTodo);
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
-      _monthlyTodos.add(newTodo.copyWith(id: docRef.id));
+      _monthlyTodos.add(newTodo);
       _controller.clear();
       FocusScope.of(context).unfocus();
     });
-    // StorageHelper.saveTodos(_monthlyTodos);
   }
 
-  void _addToDaily() async {
-    if (_controller.text.trim().isEmpty) return;
+  Future<void> _addToDaily() async {
+    if (_controller.text.trim().isEmpty) {
+      return;
+    }
 
-    final newTodo = TodoItem(
-      id: "",
+    await _refreshVisibleGoalsIfPeriodChanged();
+    final newTodo = await widget.repository.addGoal(
+      bucket: GoalBucket.daily,
       text: _controller.text.trim(),
-      isDone: false,
-      date: todayText,
     );
 
-    final docRef = await _firebaseService.addDailyTodo(newTodo, todayText);
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
-      _dailyTodos.add(newTodo.copyWith(id: docRef.id));
+      _dailyTodos.add(newTodo);
       _controller.clear();
       FocusScope.of(context).unfocus();
     });
-    // StorageHelper.saveDailyTodos(_dailyTodos, _todayKey);
   }
 
   Widget _buildTodoBox(
@@ -202,7 +218,7 @@ class _TodoListPageState extends State<TodoListPage> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Container(
         padding: const EdgeInsets.all(12),
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -217,7 +233,7 @@ class _TodoListPageState extends State<TodoListPage> {
               final todo = entry.value;
 
               return Dismissible(
-                key: Key(todo.id), // Firestore 문서 ID 사용
+                key: Key(todo.id),
                 direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: Alignment.centerRight,
@@ -226,13 +242,16 @@ class _TodoListPageState extends State<TodoListPage> {
                   child: const Icon(Icons.delete, color: Colors.white),
                 ),
                 onDismissed: (direction) async {
+                  final removedTodo = todo;
+
                   setState(() {
                     todos.removeAt(index);
                   });
 
-                  // ✅ Firestore 삭제
-                  await _firebaseService.deleteTodo(
-                    'users/testUser/${isMonthly ? "monthly" : "daily"}/${todo.id}',
+                  await widget.repository.deleteGoal(
+                    bucket:
+                        isMonthly ? GoalBucket.monthly : GoalBucket.daily,
+                    goal: removedTodo,
                   );
                 },
                 child: CheckboxListTile(
@@ -254,22 +273,15 @@ class _TodoListPageState extends State<TodoListPage> {
                       todo.isDone = value ?? false;
                     });
 
-                    // ✅ Firestore 업데이트
-                    if (isMonthly) {
-                      await _firebaseService.updateMonthlyTodoIsDone(
-                        todo.id,
-                        todo.isDone,
-                      );
-                    } else {
-                      await _firebaseService.updateDailyTodoIsDone(
-                        todo.id,
-                        todo.isDone,
-                      );
-                    }
+                    await widget.repository.updateGoal(
+                      bucket:
+                          isMonthly ? GoalBucket.monthly : GoalBucket.daily,
+                      goal: todo,
+                    );
                   },
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -279,10 +291,8 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text('One Berry at a Day🍓')),
       body: Stack(
         children: [
-          // ✅ 배경 이미지 추가
           Positioned.fill(
             child: Image.asset(
               'assets/images/bg-autumn-1.png',
@@ -294,7 +304,6 @@ class _TodoListPageState extends State<TodoListPage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // 입력창과 버튼
                   Row(
                     children: [
                       Expanded(
@@ -329,14 +338,14 @@ class _TodoListPageState extends State<TodoListPage> {
                           _buildTodoBox(
                             "$monthText - ${AppLocalizations.of(context)!.monthlyGoals}",
                             _monthlyTodos,
-                            isMonthly: true,
                             Colors.purple,
+                            isMonthly: true,
                           ),
                           _buildTodoBox(
                             "$todayText - ${AppLocalizations.of(context)!.dailyGoals}",
                             _dailyTodos,
+                            const Color(0xFFF7E8C8),
                             isMonthly: false,
-                            Color(0xFFF7E8C8),
                           ),
                         ],
                       ),
