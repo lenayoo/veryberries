@@ -17,6 +17,10 @@ GoogleService-Info.plist
 google-services.json
 lib/firebase_options.dart
 
+# Signing secrets
+key.properties
+*.jks
+
 # IntelliJ related
 *.iml
 *.ipr
